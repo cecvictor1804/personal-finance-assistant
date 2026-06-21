@@ -10,6 +10,7 @@ import type {
   Category,
   MatchType,
   PlaidItem,
+  Receipt,
   RecurringStream,
   Rule,
   SyncResult,
@@ -131,4 +132,12 @@ export const api = {
 
   getForecast: (horizonDays = 30) =>
     request<CashFlowForecast>(`/forecast?horizon_days=${horizonDays}`),
+
+  listReceipts: () => request<Receipt[]>('/receipts'),
+
+  attachReceipt: (receiptId: string, txnId: string) =>
+    request<Receipt>(`/receipts/${receiptId}/attach`, {
+      method: 'POST',
+      body: JSON.stringify({ txn_id: txnId }),
+    }),
 }

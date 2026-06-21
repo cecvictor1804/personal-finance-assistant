@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import re
 from datetime import date, datetime, timezone
+from datetime import date as _date  # alias: lets optional fields named `date` reference the type
 from enum import Enum
 
 from pydantic import BaseModel, Field
@@ -57,6 +58,13 @@ class AlertType(str, Enum):
 class Flow(str, Enum):
     INFLOW = "inflow"
     OUTFLOW = "outflow"
+
+
+class ReceiptStatus(str, Enum):
+    PENDING = "pending"   # uploaded, not yet processed
+    PARSED = "parsed"     # OCR done, no confident transaction match
+    MATCHED = "matched"   # linked to a transaction
+    ERROR = "error"
 
 
 class Severity(str, Enum):
@@ -205,3 +213,31 @@ class CashFlowForecast(BaseModel):
     net_cents: int
     projected_end_balance_cents: int
     upcoming: list[UpcomingCashFlow] = Field(default_factory=list)
+
+
+class LineItem(BaseModel):
+    description: str = ""
+    amount_cents: int = 0                     # positive magnitude
+
+
+class OcrResult(BaseModel):
+    """Parsed output of the receipt OCR (Document AI Expense parser). Pure value object."""
+
+    merchant: str = ""
+    total_cents: int = 0                      # positive magnitude
+    date: _date | None = None
+    currency: str = "USD"
+    line_items: list[LineItem] = Field(default_factory=list)
+    raw_text: str = ""
+
+
+class Receipt(BaseModel):
+    id: str
+    storage_path: str
+    status: ReceiptStatus = ReceiptStatus.PENDING
+    merchant: str = ""
+    total_cents: int = 0
+    date: _date | None = None
+    line_items: list[LineItem] = Field(default_factory=list)
+    matched_txn_id: str | None = None         # suggested or confirmed transaction link
+    created_at: datetime = Field(default_factory=utcnow)

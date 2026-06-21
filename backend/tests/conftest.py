@@ -8,18 +8,23 @@ from fastapi.testclient import TestClient
 from app.adapters.fake_provider import FakeBankProvider
 from app.adapters.memory_repo import MemoryRepository
 from app.adapters.notifier import FakeNotifier
+from app.adapters.object_store import FakeObjectStore
+from app.adapters.ocr import FakeOcrProvider
 from app.api.deps import (
     get_current_uid,
     get_notifier,
     get_provider,
+    get_receipt_service,
     get_repository,
     get_sync_service,
 )
 from app.config import Settings, get_settings
+from app.domain.models import OcrResult
 from app.main import create_app
 from app.ports.repository import ItemSecret
 from app.services.alerts import AlertEngine
 from app.services.budgets import BudgetService
+from app.services.receipts import ReceiptService
 from app.services.recurring import RecurringService
 from app.services.rollups import RollupService
 from app.services.sync import SyncService
@@ -67,6 +72,10 @@ def client(
         budget_service=BudgetService(repo),
         rollup_service=RollupService(repo),
         recurring_service=RecurringService(provider, repo, alert_engine=AlertEngine(repo, notifier)),
+    )
+    # Fresh receipt service per test (avoids the module-level singleton binding a stale repo).
+    app.dependency_overrides[get_receipt_service] = lambda: ReceiptService(
+        FakeOcrProvider(OcrResult()), FakeObjectStore(), repo
     )
     return TestClient(app)
 

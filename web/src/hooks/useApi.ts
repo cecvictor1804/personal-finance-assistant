@@ -15,6 +15,7 @@ const keys = {
   settings: ['settings'] as const,
   recurring: ['recurring'] as const,
   forecast: (horizon: number) => ['forecast', horizon] as const,
+  receipts: ['receipts'] as const,
 }
 
 const LIVE = { refetchInterval: 60_000, staleTime: 30_000 }
@@ -151,6 +152,22 @@ export function useRefreshRecurring() {
       qc.invalidateQueries({ queryKey: keys.recurring })
       qc.invalidateQueries({ queryKey: ['forecast'] })
       qc.invalidateQueries({ queryKey: ['alerts'] })
+    },
+  })
+}
+
+export function useReceipts() {
+  return useQuery({ queryKey: keys.receipts, queryFn: api.listReceipts, ...LIVE })
+}
+
+export function useAttachReceipt() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ receiptId, txnId }: { receiptId: string; txnId: string }) =>
+      api.attachReceipt(receiptId, txnId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: keys.receipts })
+      qc.invalidateQueries({ queryKey: ['transactions'] })
     },
   })
 }

@@ -16,6 +16,7 @@ FastAPI [`backend`](../backend) using React Query. Deployable to Firebase Hostin
 | `/transactions` | Filter by category, inline recategorize (creates a remembered rule), manual entry, pending + possible-duplicate flags |
 | `/budgets` | Set monthly category caps; per-category progress bars (green/amber/red) |
 | `/recurring` | Detected subscriptions/bills + recurring income, and a 30/60-day cash-flow forecast |
+| `/receipts` | OCR'd receipts with status + suggested transaction match; confirm to attach |
 | `/rules` | Create/list/delete categorization rules |
 | `/alerts` | Alert feed (large/new-merchant/foreign/rapid-repeat/budget/recurring) with mark-read; header bell shows unread count |
 | `/connections` | Plaid item status + guided re-link for broken connections |

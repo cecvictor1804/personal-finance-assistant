@@ -15,6 +15,7 @@ from app.domain.models import (
     Budget,
     ItemStatus,
     PlaidItem,
+    Receipt,
     RecurringStream,
     Rule,
     Transaction,
@@ -70,6 +71,12 @@ class Repository(Protocol):
         """Return manual transactions near `around` with the same amount (dedup candidates)."""
         ...
 
+    def find_transactions_by_amount(
+        self, uid: str, *, amount_cents: int, around: date, window_days: int
+    ) -> list[Transaction]:
+        """Return transactions of ANY source near `around` with the same amount (receipt match)."""
+        ...
+
     def get_transactions_for_month(self, uid: str, month: str) -> list[Transaction]:
         """All transactions in a "YYYY-MM" month (for budget/rollup recompute)."""
         ...
@@ -113,3 +120,8 @@ class Repository(Protocol):
     def upsert_recurring(self, uid: str, stream: RecurringStream) -> None: ...
     def get_recurring_streams(self, uid: str) -> list[RecurringStream]: ...
     def get_recurring_stream(self, uid: str, stream_id: str) -> RecurringStream | None: ...
+
+    # --- Receipts ---
+    def upsert_receipt(self, uid: str, receipt: Receipt) -> None: ...
+    def get_receipt(self, uid: str, receipt_id: str) -> Receipt | None: ...
+    def list_receipts(self, uid: str, *, limit: int = 50) -> list[Receipt]: ...

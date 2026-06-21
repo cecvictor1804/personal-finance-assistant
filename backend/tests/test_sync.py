@@ -9,8 +9,10 @@ from app.ports.repository import ItemSecret
 from app.services.sync import SyncService
 
 
-def _service(repo: MemoryRepository, pages, accounts=None) -> SyncService:
-    repo.save_item_secret(ItemSecret(item_id="item_1", uid="u1", access_token="access-x"))
+def _service(repo: MemoryRepository, pages, accounts=None, cursor=None) -> SyncService:
+    repo.save_item_secret(
+        ItemSecret(item_id="item_1", uid="u1", access_token="access-x", cursor=cursor)
+    )
     repo.upsert_item("u1", PlaidItem(id="item_1"))
     provider = FakeBankProvider(pages=pages, accounts=accounts or [])
     return SyncService(provider, repo)
@@ -72,10 +74,29 @@ def test_sync_flags_duplicate_of_manual_entry(repo):
                          date="2026-01-11")],
         next_cursor="c1",
     )
-    report = _service(repo, [page]).sync_item("u1", "item_1")
+    # Incremental sync (has a prior cursor): dedup runs. On the initial backfill it is skipped.
+    report = _service(repo, [page], cursor="prev").sync_item("u1", "item_1")
 
     assert report.flagged_duplicates == 1
     assert repo.get_transaction("u1", "plaid_t1").possible_duplicate_of == "manual_1"
+
+
+def test_initial_backfill_skips_dedup(repo):
+    manual = Transaction(
+        id="manual_1", account_id="acc_1", amount_cents=-4000, date=date(2026, 1, 10),
+        merchant="Joe's Diner", source=TransactionSource.MANUAL,
+    )
+    repo.upsert_transaction("u1", manual)
+
+    page = ProviderSyncResult(
+        added=[plaid_txn(transaction_id="t1", amount=40.00, merchant_name="JOES DINER",
+                         date="2026-01-11")],
+        next_cursor="c1",
+    )
+    report = _service(repo, [page], cursor=None).sync_item("u1", "item_1")  # initial backfill
+
+    assert report.flagged_duplicates == 0
+    assert repo.get_transaction("u1", "plaid_t1").possible_duplicate_of is None
 
 
 def test_modified_preserves_user_category_and_notes(repo):

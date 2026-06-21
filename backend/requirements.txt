@@ -11,6 +11,7 @@ google-cloud-firestore==2.20.0
 google-cloud-kms==3.1.0
 google-cloud-pubsub==2.27.1
 google-cloud-documentai==3.2.0
+google-cloud-storage==2.19.0
 
 # --- Dev / test ---
 pytest==8.3.4

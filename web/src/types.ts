@@ -131,6 +131,25 @@ export interface UserSettings {
   fcm_tokens: string[]
 }
 
+export type ReceiptStatus = 'pending' | 'parsed' | 'matched' | 'error'
+
+export interface LineItem {
+  description: string
+  amount_cents: number
+}
+
+export interface Receipt {
+  id: string
+  storage_path: string
+  status: ReceiptStatus
+  merchant: string
+  total_cents: number
+  date: string | null
+  line_items: LineItem[]
+  matched_txn_id: string | null
+  created_at: string
+}
+
 export interface RecurringStream {
   id: string
   merchant: string

@@ -6,6 +6,7 @@ import { BudgetsPage } from '@/pages/BudgetsPage'
 import { ConnectionsPage } from '@/pages/ConnectionsPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { LoginPage } from '@/pages/LoginPage'
+import { ReceiptsPage } from '@/pages/ReceiptsPage'
 import { RecurringPage } from '@/pages/RecurringPage'
 import { RulesPage } from '@/pages/RulesPage'
 import { TransactionsPage } from '@/pages/TransactionsPage'
@@ -25,6 +26,7 @@ export function App() {
         <Route path="/transactions" element={<TransactionsPage />} />
         <Route path="/budgets" element={<BudgetsPage />} />
         <Route path="/recurring" element={<RecurringPage />} />
+        <Route path="/receipts" element={<ReceiptsPage />} />
         <Route path="/rules" element={<RulesPage />} />
         <Route path="/alerts" element={<AlertsPage />} />
         <Route path="/connections" element={<ConnectionsPage />} />

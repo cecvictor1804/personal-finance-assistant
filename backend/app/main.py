@@ -14,6 +14,7 @@ from app.api import (
     routes_alerts,
     routes_budgets,
     routes_items,
+    routes_receipts,
     routes_recurring,
     routes_rules,
     routes_settings,
@@ -45,6 +46,8 @@ def create_app() -> FastAPI:
     app.include_router(routes_alerts.router)
     app.include_router(routes_settings.router)
     app.include_router(routes_recurring.router)
+    app.include_router(routes_receipts.router)
+    app.include_router(routes_receipts.internal_router)
     app.include_router(routes_items.router)
     app.include_router(routes_items.internal_router)
     return app

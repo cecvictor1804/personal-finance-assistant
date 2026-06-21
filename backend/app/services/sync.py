@@ -81,7 +81,10 @@ class SyncService:
                 existing = self._repo.get_transaction(uid, txn.id)
                 is_new = existing is None
                 if is_new:
-                    if self._flag_duplicate(uid, txn):
+                    # Dedup only matters on incremental syncs: on the initial backfill there are
+                    # no prior manual entries to collide with, and running the candidate query per
+                    # backfilled transaction would be a wasted read.
+                    if not is_initial and self._flag_duplicate(uid, txn):
                         report.flagged_duplicates += 1
                 else:
                     txn = self._preserve_user_fields(existing, txn)

@@ -201,6 +201,51 @@ def test_recurring_and_forecast_endpoints(client, repo):
     assert "upcoming" in fc
 
 
+def test_receipts_list_and_attach(client, repo):
+    from datetime import date
+
+    from app.domain.models import Receipt, ReceiptStatus, Transaction, TransactionSource
+
+    repo.upsert_transaction(
+        "u1",
+        Transaction(id="plaid_1", account_id="a", amount_cents=-4599, date=date(2026, 6, 10),
+                    merchant="Cafe", source=TransactionSource.PLAID),
+    )
+    repo.upsert_receipt(
+        "u1",
+        Receipt(id="r1", storage_path="receipts/u1/r1.jpg", status=ReceiptStatus.PARSED,
+                merchant="Cafe", total_cents=4599, date=date(2026, 6, 11)),
+    )
+
+    listed = client.get("/receipts").json()
+    assert [r["id"] for r in listed] == ["r1"]
+
+    attached = client.post("/receipts/r1/attach", json={"txn_id": "plaid_1"}).json()
+    assert attached["status"] == "matched"
+    assert attached["matched_txn_id"] == "plaid_1"
+    # The transaction now references the receipt.
+    assert client.get("/transactions/plaid_1").json()["receipt_id"] == "r1"
+
+
+def test_pubsub_receipt_processes_upload(client):
+    import base64
+    import json as _json
+
+    payload = {"uid": "u1", "receipt_id": "rX", "bucket": "b", "path": "receipts/u1/rX.jpg"}
+    data = base64.b64encode(_json.dumps(payload).encode()).decode()
+    resp = client.post("/internal/pubsub/receipt?token=s3cr3t", json={"message": {"data": data}})
+    assert resp.status_code == 204
+
+    # Receipt record was created (empty OCR via the fake → PARSED, no match).
+    receipts = client.get("/receipts").json()
+    assert any(r["id"] == "rX" for r in receipts)
+
+
+def test_pubsub_receipt_rejects_bad_token(client):
+    resp = client.post("/internal/pubsub/receipt?token=nope", json={"message": {"data": ""}})
+    assert resp.status_code == 403
+
+
 def test_settings_get_put_and_fcm_token(client):
     s = client.get("/settings").json()
     assert s["large_txn_threshold_cents"] == 50000

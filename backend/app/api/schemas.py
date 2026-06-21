@@ -61,3 +61,7 @@ class BudgetCapsIn(BaseModel):
 
 class FcmTokenIn(BaseModel):
     token: str
+
+
+class AttachReceiptIn(BaseModel):
+    txn_id: str

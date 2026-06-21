@@ -16,12 +16,14 @@ from app.ports.repository import Repository
 from app.services.alerts import AlertEngine
 from app.services.budgets import BudgetService
 from app.services.forecast import CashFlowService
+from app.services.receipts import ReceiptService
 from app.services.recurring import RecurringService
 from app.services.rollups import RollupService
 from app.services.sync import SyncService
 
 _repo: Repository | None = None
 _provider: BankProvider | None = None
+_receipt_service: ReceiptService | None = None
 _firebase_ready = False
 
 
@@ -79,6 +81,28 @@ def get_recurring_service(
 
 def get_forecast_service(repo: Repository = Depends(get_repository)) -> CashFlowService:
     return CashFlowService(repo)
+
+
+def get_receipt_service(
+    repo: Repository = Depends(get_repository),
+    settings: Settings = Depends(get_settings),
+) -> ReceiptService:
+    global _receipt_service
+    if _receipt_service is None:
+        if settings.app_env == "local":
+            from app.adapters.object_store import FakeObjectStore
+            from app.adapters.ocr import FakeOcrProvider
+            from app.domain.models import OcrResult
+
+            _receipt_service = ReceiptService(FakeOcrProvider(OcrResult()), FakeObjectStore(), repo)
+        else:
+            from app.adapters.object_store import GcsObjectStore
+            from app.adapters.ocr import DocumentAiOcrProvider
+
+            _receipt_service = ReceiptService(
+                DocumentAiOcrProvider(settings.docai_processor_name), GcsObjectStore(), repo
+            )
+    return _receipt_service
 
 
 def get_sync_service(

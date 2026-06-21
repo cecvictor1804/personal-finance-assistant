@@ -15,25 +15,30 @@ import json
 import os
 
 from firebase_admin import firestore, initialize_app
-from firebase_functions import https_fn
+from firebase_functions import https_fn, storage_fn
 
 import plaid_client
 
 initialize_app()
 
 _SYNC_TOPIC = os.environ.get("PLAID_SYNC_TOPIC", "plaid-sync")
+_RECEIPT_TOPIC = os.environ.get("RECEIPT_TOPIC", "receipt-process")
 _PROJECT = os.environ.get("GCP_PROJECT") or os.environ.get("GCLOUD_PROJECT", "")
 
 # Plaid webhook codes that mean "this item needs the user to re-authenticate".
 _REAUTH_CODES = {"PENDING_EXPIRATION", "USER_PERMISSION_REVOKED"}
 
 
-def _publish_sync(uid: str, item_id: str) -> None:
+def _publish(topic_name: str, payload: dict) -> None:
     from google.cloud import pubsub_v1
 
     publisher = pubsub_v1.PublisherClient()
-    topic = publisher.topic_path(_PROJECT, _SYNC_TOPIC)
-    publisher.publish(topic, json.dumps({"uid": uid, "item_id": item_id}).encode("utf-8"))
+    topic = publisher.topic_path(_PROJECT, topic_name)
+    publisher.publish(topic, json.dumps(payload).encode("utf-8"))
+
+
+def _publish_sync(uid: str, item_id: str) -> None:
+    _publish(_SYNC_TOPIC, {"uid": uid, "item_id": item_id})
 
 
 def _uid_for_item(db, item_id: str) -> str | None:
@@ -126,3 +131,25 @@ def jwt_client_ok(body: bytes, jwt_header: str) -> bool:
     if not jwt_header:
         return False
     return plaid_client.verify_webhook(body, jwt_header)
+
+
+@storage_fn.on_object_finalized()
+def process_receipt(event: storage_fn.CloudEvent) -> None:
+    """When a receipt image lands in Storage at receipts/{uid}/{receiptId}.ext, enqueue OCR.
+
+    The Cloud Run backend (Pub/Sub push -> /internal/pubsub/receipt) runs Document AI + matching.
+    """
+    data = event.data
+    name = getattr(data, "name", None)
+    bucket = getattr(data, "bucket", None)
+    if not name or not name.startswith("receipts/"):
+        return
+    parts = name.split("/")
+    if len(parts) < 3:
+        return
+    uid = parts[1]
+    receipt_id = parts[-1].rsplit(".", 1)[0]
+    _publish(
+        _RECEIPT_TOPIC,
+        {"uid": uid, "receipt_id": receipt_id, "bucket": bucket, "path": name},
+    )

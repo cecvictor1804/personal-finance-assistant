@@ -15,6 +15,7 @@ from app.domain.models import (
     Budget,
     ItemStatus,
     PlaidItem,
+    Receipt,
     RecurringStream,
     Rule,
     Transaction,
@@ -37,6 +38,7 @@ class MemoryRepository:
         self._settings: dict[str, UserSettings] = {}
         self._rollups: dict[str, dict[str, dict]] = defaultdict(dict)
         self._recurring: dict[str, dict[str, RecurringStream]] = defaultdict(dict)
+        self._receipts: dict[str, dict[str, Receipt]] = defaultdict(dict)
 
     # --- secrets ---
     def save_item_secret(self, secret: ItemSecret) -> None:
@@ -123,6 +125,16 @@ class MemoryRepository:
             if t.source == TransactionSource.MANUAL
             and t.amount_cents == amount_cents
             and lo <= t.date <= hi
+        ]
+
+    def find_transactions_by_amount(
+        self, uid: str, *, amount_cents: int, around: date, window_days: int
+    ) -> list[Transaction]:
+        lo, hi = around - timedelta(days=window_days), around + timedelta(days=window_days)
+        return [
+            t
+            for t in self._txns[uid].values()
+            if t.amount_cents == amount_cents and lo <= t.date <= hi
         ]
 
     def get_transactions_for_month(self, uid: str, month: str) -> list[Transaction]:
@@ -215,3 +227,15 @@ class MemoryRepository:
 
     def get_recurring_stream(self, uid: str, stream_id: str) -> RecurringStream | None:
         return self._recurring[uid].get(stream_id)
+
+    # --- receipts ---
+    def upsert_receipt(self, uid: str, receipt: Receipt) -> None:
+        self._receipts[uid][receipt.id] = receipt
+
+    def get_receipt(self, uid: str, receipt_id: str) -> Receipt | None:
+        return self._receipts[uid].get(receipt_id)
+
+    def list_receipts(self, uid: str, *, limit: int = 50) -> list[Receipt]:
+        items = list(self._receipts[uid].values())
+        items.sort(key=lambda r: r.created_at, reverse=True)
+        return items[:limit]

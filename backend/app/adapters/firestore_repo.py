@@ -4,7 +4,8 @@ Documents store the pydantic models' JSON form (snake_case keys, dates/datetimes
 enums as their values), which round-trips cleanly back through the models. Plaid access tokens are
 KMS-encrypted and live in the top-level, client-inaccessible `plaid_secrets` collection.
 
-Imported lazily by the composition root; not exercised by unit tests (use MemoryRepository there).
+The KMS cipher is injectable so integration tests can run against the Firestore emulator with a
+no-op cipher (no GCP/KMS credentials required); production builds it from the configured key.
 """
 
 from __future__ import annotations
@@ -18,6 +19,7 @@ from app.domain.models import (
     Budget,
     ItemStatus,
     PlaidItem,
+    Receipt,
     RecurringStream,
     Rule,
     Transaction,
@@ -28,11 +30,12 @@ from app.ports.repository import ItemSecret
 
 
 class FirestoreRepository:
-    def __init__(self, project_id: str, kms_key_name: str) -> None:
+    def __init__(self, project_id: str, kms_key_name: str = "", *, cipher=None) -> None:
         from google.cloud import firestore
 
         self._db = firestore.Client(project=project_id)
-        self._cipher = KmsCipher(kms_key_name)
+        # `cipher` is injectable for tests; otherwise build the real KMS cipher from the key name.
+        self._cipher = cipher if cipher is not None else KmsCipher(kms_key_name)
 
     # --- path helpers ---
     def _user(self, uid: str):
@@ -148,6 +151,20 @@ class FirestoreRepository:
         )
         return [Transaction(**s.to_dict()) for s in q.stream()]
 
+    def find_transactions_by_amount(
+        self, uid: str, *, amount_cents: int, around: date, window_days: int
+    ) -> list[Transaction]:
+        from datetime import timedelta
+
+        lo, hi = around - timedelta(days=window_days), around + timedelta(days=window_days)
+        q = (
+            self._txns(uid)
+            .where("amount_cents", "==", amount_cents)
+            .where("date", ">=", lo.isoformat())
+            .where("date", "<=", hi.isoformat())
+        )
+        return [Transaction(**s.to_dict()) for s in q.stream()]
+
     def get_transactions_for_month(self, uid: str, month: str) -> list[Transaction]:
         q = (
             self._txns(uid)
@@ -250,3 +267,24 @@ class FirestoreRepository:
     def get_recurring_stream(self, uid: str, stream_id: str) -> RecurringStream | None:
         snap = self._user(uid).collection("recurring").document(stream_id).get()
         return RecurringStream(**snap.to_dict()) if snap.exists else None
+
+    # --- receipts ---
+    def upsert_receipt(self, uid: str, receipt: Receipt) -> None:
+        self._user(uid).collection("receipts").document(receipt.id).set(
+            receipt.model_dump(mode="json")
+        )
+
+    def get_receipt(self, uid: str, receipt_id: str) -> Receipt | None:
+        snap = self._user(uid).collection("receipts").document(receipt_id).get()
+        return Receipt(**snap.to_dict()) if snap.exists else None
+
+    def list_receipts(self, uid: str, *, limit: int = 50) -> list[Receipt]:
+        from google.cloud.firestore import Query
+
+        q = (
+            self._user(uid)
+            .collection("receipts")
+            .order_by("created_at", direction=Query.DESCENDING)
+            .limit(limit)
+        )
+        return [Receipt(**s.to_dict()) for s in q.stream()]

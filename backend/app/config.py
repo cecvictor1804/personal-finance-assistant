@@ -34,6 +34,8 @@ class Settings(BaseSettings):
     # GCP / Firebase
     gcp_project_id: str = Field(default="")
     kms_key_name: str = Field(default="")
+    # Document AI Expense parser processor (projects/{p}/locations/{loc}/processors/{id}).
+    docai_processor_name: str = Field(default="")
 
     # Alerts (Phase 3)
     large_txn_threshold_cents: int = Field(default=50_000)
