@@ -25,10 +25,21 @@ Style your own layout with the same Tailwind vocabulary the components use:
 | Radius | `rounded-md` (controls), `rounded-xl` (cards), `rounded-full` (badges/pills) |
 | Type | `text-xs`, `text-sm`, `text-lg`, `text-2xl`, `font-medium`, `font-semibold`, `tabular-nums` (money) |
 
-**Important:** the bound stylesheet contains only the Tailwind classes the shipped components and
-their examples use. When you add layout glue, prefer classes from the table above; an arbitrary
-unused Tailwind class may not be present. If you need a class that isn't styled, keep to this
-slate-based palette and the spacing/radius scale above so the result stays on-brand.
+**A curated on-brand palette is safelisted** in the bound stylesheet, so you can style your own
+layout/glue with it — not only the classes the shipped components happen to use:
+- **Neutrals**: `bg|text|border-slate-{50…900}`, `bg|text|border-white`
+- **Semantic**: `bg|text|border-{emerald,green,red,amber}-{50,100,200,500,600,700}` — emerald/green =
+  inflow/positive, red = outflow/danger, amber = warning
+- **Category accents**: `bg|text-{sky,lime,orange,pink,indigo,violet,teal}-{100,500,600}`
+- **Layout/spacing/type**: `flex`/`inline-flex`/`grid` + `flex-col`/`flex-wrap`/`items-*`/`justify-*`,
+  `grid-cols-{1,2,3,4,6,12}`, `col-span-*`, `gap-*`, `p*`/`m*` (0–12), `w-*`/`h-*`, `max-w-*`,
+  `rounded(-sm|md|lg|xl|2xl|full)`, `shadow(-sm|md|lg)`, `text-{xs…3xl}`,
+  `font-{normal,medium,semibold,bold}`, `tabular-nums`
+
+Stick to these families and shade ranges and the result stays on-brand. Classes far outside this set
+(exotic colors/shades, rare utilities) may not be present in the stylesheet — prefer the palette
+above. `hover:`/`focus:` variants are not safelisted; the components carry their own interaction
+states.
 
 ## Money + categories (domain conventions)
 - Monetary amounts are **signed integer cents** — negative = outflow/spending, positive = inflow.
@@ -44,7 +55,9 @@ slate-based palette and the spacing/radius scale above so the result stays on-br
 ## Where the truth lives
 - `styles.css` (+ its `_ds_bundle.css` import) — the exact class set that's actually styled.
 - Each component's `<Name>.d.ts` (the prop contract) and `<Name>.prompt.md` (usage) under
-  `components/<group>/<Name>/`.
+  `components/<group>/<Name>/`. Groups: **primitives** (Button, Card, Badge, Input, Select, Progress,
+  Spinner), **finance** (MoneyText, CategoryBadge), **charts** (SpendingTrendChart,
+  CategoryBreakdownChart).
 
 ## One idiomatic example — an account balance card
 ```tsx

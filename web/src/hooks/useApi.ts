@@ -28,6 +28,15 @@ export function useTransactions(filters: TransactionFilters = {}) {
   })
 }
 
+export function useTransaction(id: string) {
+  return useQuery({
+    queryKey: ['transaction', id] as const,
+    queryFn: () => api.getTransaction(id),
+    enabled: !!id,
+    ...LIVE,
+  })
+}
+
 export function useAccounts() {
   return useQuery({ queryKey: keys.accounts, queryFn: api.listAccounts, ...LIVE })
 }
@@ -59,6 +68,7 @@ export function useRecategorize() {
       api.recategorize(id, category, remember ?? true),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['transactions'] })
+      qc.invalidateQueries({ queryKey: ['transaction'] })
       qc.invalidateQueries({ queryKey: keys.rules })
     },
   })

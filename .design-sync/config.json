@@ -7,6 +7,7 @@
   "tsconfig": "tsconfig.json",
   "srcDir": "src",
   "cssEntry": ".ds-styles.css",
+  "docsDir": "../.design-sync/docs",
   "componentSrcMap": {
     "Button": "src/components/ui/button.tsx",
     "Card": "src/components/ui/card.tsx",

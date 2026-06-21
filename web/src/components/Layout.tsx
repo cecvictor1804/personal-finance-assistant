@@ -1,5 +1,6 @@
 import {
   Bell,
+  Landmark,
   LayoutDashboard,
   ListOrdered,
   Plug,
@@ -19,6 +20,7 @@ import { cn } from '@/lib/utils'
 
 const NAV = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
+  { to: '/accounts', label: 'Accounts', icon: Landmark, end: false },
   { to: '/transactions', label: 'Transactions', icon: ListOrdered, end: false },
   { to: '/budgets', label: 'Budgets', icon: Target, end: false },
   { to: '/recurring', label: 'Recurring', icon: Repeat, end: false },

@@ -16,10 +16,17 @@ in conventions.md + the Card/Spinner contracts.
 ## Key sync inputs (committed, durable)
 - `web/ds-entry.tsx` — barrel entry (`--entry`). MUST live in `web/` so the converter resolves
   PKG_DIR → `web/package.json`. `@/` resolves to `web/src` via `cfg.tsconfig`.
-- `.design-sync/tailwind.ds.config.cjs` + `.design-sync/ds-input.css` — Tailwind compile inputs.
+- `.design-sync/tailwind.ds.config.cjs` + `.design-sync/ds-input.css` — Tailwind compile inputs. The
+  config carries a curated `safelist` palette (slate neutrals + emerald/green/red/amber semantics +
+  finance accents + layout/spacing/type scales) so the design agent's own layout glue renders styled,
+  not just the classes the shipped components use. No `hover:`/`focus:` variants (size).
 - `.design-sync/config.json` — `cfg.dtsPropsFor` hand-writes every contract (no built `.d.ts`
   exists, so ts-morph finds no props). Update dtsPropsFor if a component's source props change.
+  `cfg.docsDir` points at `../.design-sync/docs`.
 - `.design-sync/previews/*.tsx` — authored previews (one per component).
+- `.design-sync/docs/*.md` — per-component docs; frontmatter `category` sets the DS-pane group
+  (Primitives / Finance / Charts — only overrides `general`/`misc`, so charts stay `charts`), body
+  becomes `<Name>.prompt.md`. Bound via `cfg.docsDir`.
 - `.design-sync/conventions.md` — README header (wired via `readmeHeader`).
 
 ## Build/verify commands (run from repo root)
@@ -34,8 +41,9 @@ in conventions.md + the Card/Spinner contracts.
 `web/tailwind.config.js` has an empty `theme.extend`; the design language is stock Tailwind
 + shadcn-style component variants. The compiled stylesheet (`web/.ds-styles.css`, gitignored,
 cfg.cssEntry) is appended into `_ds_bundle.css` and reaches designs via the `styles.css` closure.
-It ONLY contains classes used by the components + authored previews — a design that uses other
-Tailwind classes for its own layout glue won't have them styled. (Documented in conventions.md.)
+It contains classes used by the components + previews PLUS the curated `safelist` palette in
+`tailwind.ds.config.cjs` — so the agent has a broad on-brand vocabulary. Classes far outside the
+safelist (exotic colors/shades, rare utilities) still won't be present. (Documented in conventions.md.)
 
 ## Known render warns (triaged, expected)
 - `tokens: 56 defined, 13 referenced (1 missing, below threshold)` — non-blocking; a recharts/

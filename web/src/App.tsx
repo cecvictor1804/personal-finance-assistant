@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { Layout } from '@/components/Layout'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
+import { AccountsPage } from '@/pages/AccountsPage'
 import { AlertsPage } from '@/pages/AlertsPage'
 import { BudgetsPage } from '@/pages/BudgetsPage'
 import { ConnectionsPage } from '@/pages/ConnectionsPage'
@@ -9,6 +10,7 @@ import { LoginPage } from '@/pages/LoginPage'
 import { ReceiptsPage } from '@/pages/ReceiptsPage'
 import { RecurringPage } from '@/pages/RecurringPage'
 import { RulesPage } from '@/pages/RulesPage'
+import { TransactionDetailPage } from '@/pages/TransactionDetailPage'
 import { TransactionsPage } from '@/pages/TransactionsPage'
 
 export function App() {
@@ -23,7 +25,9 @@ export function App() {
         }
       >
         <Route path="/" element={<DashboardPage />} />
+        <Route path="/accounts" element={<AccountsPage />} />
         <Route path="/transactions" element={<TransactionsPage />} />
+        <Route path="/transactions/:id" element={<TransactionDetailPage />} />
         <Route path="/budgets" element={<BudgetsPage />} />
         <Route path="/recurring" element={<RecurringPage />} />
         <Route path="/receipts" element={<ReceiptsPage />} />
