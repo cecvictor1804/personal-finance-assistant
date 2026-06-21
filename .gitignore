@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+*-service-account.json
+*.serviceaccount.json
+secrets/
+
+# Node / web
+node_modules/
+web/dist/
+web/.vite/
+
+# Flutter / mobile
+mobile/.dart_tool/
+mobile/build/
+mobile/.flutter-plugins*
+mobile/android/key.properties
+*.keystore
+*.jks
+
+# Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

@@ -1,0 +1,37 @@
+rules_version = '2';
+
+// Single-user app, but written multi-user-safe: everything under users/{uid}
+// is locked to the authenticated owner. The backend uses the Admin SDK and
+// bypasses these rules; clients are read-mostly and write via the REST API.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    // All per-user data: owner-only.
+    match /users/{uid} {
+      allow read: if isOwner(uid);
+      // Profile/settings may be updated by the owner from the client.
+      allow write: if isOwner(uid);
+
+      match /{document=**} {
+        allow read: if isOwner(uid);
+        // Mutations to financial records go through the backend (Admin SDK).
+        // Clients may not write transactions/accounts/rollups directly.
+        allow write: if false;
+      }
+    }
+
+    // Plaid access tokens & cursors: NEVER reachable from a client.
+    match /plaid_secrets/{itemId} {
+      allow read, write: if false;
+    }
+
+    // Trigger-Email extension outbox: backend-only.
+    match /mail/{mailId} {
+      allow read, write: if false;
+    }
+  }
+}
