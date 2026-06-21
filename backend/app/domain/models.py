@@ -53,6 +53,7 @@ class AlertType(str, Enum):
     BUDGET_EXCEEDED = "budget_exceeded"    # category spend exceeded its cap
     NEW_RECURRING = "new_recurring"        # a new subscription/recurring charge was detected
     RECURRING_AMOUNT_CHANGE = "recurring_amount_change"  # a recurring charge changed amount
+    ANOMALOUS_SPEND = "anomalous_spend"    # statistical outlier vs the category's normal spend
 
 
 class Flow(str, Enum):
@@ -178,6 +179,7 @@ class UserSettings(BaseModel):
     home_country: str = "US"
     email: str | None = None                  # where alert emails go
     fcm_tokens: list[str] = Field(default_factory=list)
+    anomaly_detection_enabled: bool = True    # statistical outlier alerts (Phase 7)
 
 
 class RecurringStream(BaseModel):

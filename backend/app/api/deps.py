@@ -14,6 +14,7 @@ from app.ports.bank_provider import BankProvider
 from app.ports.notifier import Notifier
 from app.ports.repository import Repository
 from app.services.alerts import AlertEngine
+from app.services.anomaly import AnomalyDetector
 from app.services.budgets import BudgetService
 from app.services.forecast import CashFlowService
 from app.services.receipts import ReceiptService
@@ -118,6 +119,7 @@ def get_sync_service(
         budget_service=BudgetService(repo),
         rollup_service=RollupService(repo),
         recurring_service=RecurringService(provider, repo, alert_engine=engine),
+        anomaly_detector=AnomalyDetector(repo, engine),
     )
 
 

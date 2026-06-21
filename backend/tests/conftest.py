@@ -23,6 +23,7 @@ from app.domain.models import OcrResult
 from app.main import create_app
 from app.ports.repository import ItemSecret
 from app.services.alerts import AlertEngine
+from app.services.anomaly import AnomalyDetector
 from app.services.budgets import BudgetService
 from app.services.receipts import ReceiptService
 from app.services.recurring import RecurringService
@@ -72,6 +73,7 @@ def client(
         budget_service=BudgetService(repo),
         rollup_service=RollupService(repo),
         recurring_service=RecurringService(provider, repo, alert_engine=AlertEngine(repo, notifier)),
+        anomaly_detector=AnomalyDetector(repo, AlertEngine(repo, notifier)),
     )
     # Fresh receipt service per test (avoids the module-level singleton binding a stale repo).
     app.dependency_overrides[get_receipt_service] = lambda: ReceiptService(

@@ -19,6 +19,7 @@ from app.domain.models import CategorySource, ItemStatus, Transaction
 from app.ports.bank_provider import BankProvider
 from app.ports.repository import Repository
 from app.services.alerts import AlertEngine
+from app.services.anomaly import AnomalyDetector
 from app.services.budgets import BudgetService
 from app.services.categorization import apply_categorization
 from app.services.dedup import DEFAULT_WINDOW_DAYS, find_duplicate
@@ -53,6 +54,7 @@ class SyncService:
         budget_service: BudgetService | None = None,
         rollup_service: RollupService | None = None,
         recurring_service: RecurringService | None = None,
+        anomaly_detector: AnomalyDetector | None = None,
     ) -> None:
         self._provider = provider
         self._repo = repo
@@ -61,6 +63,7 @@ class SyncService:
         self._budget_service = budget_service
         self._rollup_service = rollup_service
         self._recurring_service = recurring_service
+        self._anomaly_detector = anomaly_detector
 
     def sync_item(self, uid: str, item_id: str) -> SyncReport:
         secret = self._repo.get_item_secret(item_id)
@@ -138,6 +141,7 @@ class SyncService:
             or self._budget_service
             or self._rollup_service
             or self._recurring_service
+            or self._anomaly_detector
         ):
             return
 
@@ -154,6 +158,9 @@ class SyncService:
         if self._alert_engine and not is_initial:
             for txn in new_txns:
                 report.alerts_created += len(self._alert_engine.evaluate_transaction(uid, txn))
+
+        if self._anomaly_detector and not is_initial:
+            report.alerts_created += len(self._anomaly_detector.evaluate(uid, new_txns))
 
         if self._recurring_service:
             report.alerts_created += len(
