@@ -1,0 +1,36 @@
+{
+  "projectId": "7912906b-fdcf-4d26-afdd-5bb9d12744cf",
+  "shape": "package",
+  "pkg": "pfa-web",
+  "globalName": "PFAUI",
+  "readmeHeader": ".design-sync/conventions.md",
+  "tsconfig": "tsconfig.json",
+  "srcDir": "src",
+  "cssEntry": ".ds-styles.css",
+  "componentSrcMap": {
+    "Button": "src/components/ui/button.tsx",
+    "Card": "src/components/ui/card.tsx",
+    "Badge": "src/components/ui/badge.tsx",
+    "Input": "src/components/ui/input.tsx",
+    "Select": "src/components/ui/select.tsx",
+    "Progress": "src/components/ui/progress.tsx",
+    "Spinner": "src/components/ui/spinner.tsx",
+    "MoneyText": "src/components/MoneyText.tsx",
+    "CategoryBadge": "src/components/CategoryBadge.tsx",
+    "SpendingTrendChart": "src/components/charts/SpendingTrendChart.tsx",
+    "CategoryBreakdownChart": "src/components/charts/CategoryBreakdownChart.tsx"
+  },
+  "dtsPropsFor": {
+    "Button": "  /** Visual style. @default \"default\" */\n  variant?: \"default\" | \"outline\" | \"ghost\" | \"destructive\";\n  /** Control size. @default \"md\" */\n  size?: \"sm\" | \"md\" | \"icon\";\n  children?: React.ReactNode;\n  className?: string;\n  type?: \"button\" | \"submit\" | \"reset\";\n  disabled?: boolean;\n  onClick?: React.MouseEventHandler<HTMLButtonElement>;\n  /** Accepts all standard <button> HTML attributes. */",
+    "Card": "  /** Card body. Compose with the CardHeader, CardTitle, and CardContent\n   *  subcomponents, which are also exported from this library. */\n  children?: React.ReactNode;\n  className?: string;",
+    "Badge": "  children?: React.ReactNode;\n  className?: string;\n  /** Inline styles (used by CategoryBadge for per-category color). */\n  style?: React.CSSProperties;",
+    "Input": "  type?: string;\n  placeholder?: string;\n  value?: string | number;\n  defaultValue?: string | number;\n  disabled?: boolean;\n  className?: string;\n  onChange?: React.ChangeEventHandler<HTMLInputElement>;\n  /** Accepts all standard <input> HTML attributes. */",
+    "Select": "  /** <option> elements. */\n  children?: React.ReactNode;\n  value?: string | number;\n  defaultValue?: string | number;\n  disabled?: boolean;\n  className?: string;\n  onChange?: React.ChangeEventHandler<HTMLSelectElement>;",
+    "Progress": "  /** Percent complete, 0–100 (clamped to range). */\n  value: number;\n  /** Class applied to the filled bar (e.g. a status color like bg-emerald-500). */\n  barClassName?: string;\n  /** Class applied to the track. */\n  className?: string;",
+    "Spinner": "  className?: string;\n  /** Note: a CenteredSpinner({ label?: string }) helper is also exported for\n   *  full-width loading states. */",
+    "MoneyText": "  /** Signed integer minor units (cents). Negative = outflow/spending. */\n  cents: number;\n  /** ISO 4217 currency code. @default \"USD\" */\n  currency?: string;\n  /** Color positive green / negative red. @default false (neutral). */\n  colorize?: boolean;\n  className?: string;",
+    "CategoryBadge": "  /** Spending category — drives the badge label and color. */\n  category:\n    | \"INCOME\" | \"TRANSFER\" | \"FOOD_DINING\" | \"GROCERIES\" | \"SHOPPING\"\n    | \"TRANSPORT\" | \"TRAVEL\" | \"BILLS_UTILITIES\" | \"RENT_MORTGAGE\"\n    | \"HEALTHCARE\" | \"ENTERTAINMENT\" | \"PERSONAL_CARE\" | \"EDUCATION\"\n    | \"FEES_CHARGES\" | \"LOAN_PAYMENT\" | \"TAXES_GOV\" | \"GIFTS_DONATIONS\"\n    | \"BUSINESS_SERVICES\" | \"UNCATEGORIZED\";",
+    "SpendingTrendChart": "  /** Monthly spending-vs-income series (oldest first). Renders at 100% width,\n   *  260px tall. */\n  data: Array<{\n    /** Short month label, e.g. \"Jun 26\". */\n    month: string;\n    /** Spending magnitude for the month, in cents (positive). */\n    spending_cents: number;\n    /** Income for the month, in cents (positive). */\n    income_cents: number;\n  }>;",
+    "CategoryBreakdownChart": "  /** Per-category spend slices for one month (donut). Empty array renders an\n   *  \"No spending this month yet.\" placeholder. */\n  data: Array<{\n    category: string;\n    /** Human label shown in the tooltip. */\n    label: string;\n    /** Slice magnitude in cents. */\n    value_cents: number;\n    /** Hex color for the slice. */\n    color: string;\n  }>;"
+  }
+}

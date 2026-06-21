@@ -1,0 +1,5 @@
+/* Tailwind entry for the /design-sync compiled stylesheet. Base (preflight)
+   + components + utilities, no app-specific body styling. */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
