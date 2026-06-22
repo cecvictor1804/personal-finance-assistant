@@ -54,6 +54,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     : const Icon(Icons.login),
                 label: const Text('Continue with Google'),
               ),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: () => context.read<AuthService>().continueAsDev(),
+                child: const Text('Continue without account (dev)'),
+              ),
               if (_error != null) ...[
                 const SizedBox(height: 12),
                 Text(_error!, style: const TextStyle(color: Colors.red, fontSize: 12)),

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -34,6 +35,13 @@ class _LockScreenState extends State<LockScreen> {
               icon: const Icon(Icons.fingerprint),
               label: const Text('Unlock'),
             ),
+            if (kDebugMode) ...[
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: () => context.read<AppLock>().devUnlock(),
+                child: const Text('Skip (dev)'),
+              ),
+            ],
           ],
         ),
       ),

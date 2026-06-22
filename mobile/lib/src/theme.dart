@@ -9,7 +9,7 @@ ThemeData buildTheme() {
     useMaterial3: true,
     colorScheme: scheme,
     scaffoldBackgroundColor: const Color(0xFFF8FAFC),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       elevation: 0,
       color: Colors.white,
       shape: RoundedRectangleBorder(

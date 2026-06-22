@@ -1,7 +1,9 @@
-// PLACEHOLDER — replace by running `flutterfire configure` (it overwrites this file with the
-// real values for your Firebase project). Committed here only so the app compiles before setup.
+// DEBUG STUB — these are NOT real Firebase credentials. They are well-formed dummy values that let
+// `Firebase.initializeApp` succeed offline so a debug APK can be built and launched WITHOUT a real
+// Firebase project. Auth / push / functions will not work at runtime.
 //
-// The values below are not real; the app will fail at runtime until you regenerate this file.
+// To restore real functionality, run `flutterfire configure` (it overwrites this file with the real
+// values for your Firebase project) — that reverts the stub.
 
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
@@ -18,11 +20,13 @@ class DefaultFirebaseOptions {
     }
   }
 
+  // Well-formed dummy values (valid shapes, fake content): appId = 1:<senderId>:android:<hex>,
+  // apiKey = AIza... so initializeApp validation passes locally.
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'REPLACE_ME',
-    appId: 'REPLACE_ME',
-    messagingSenderId: 'REPLACE_ME',
-    projectId: 'REPLACE_ME',
-    storageBucket: 'REPLACE_ME.appspot.com',
+    apiKey: 'AIzaSyDEBUGSTUB0000000000000000000000000',
+    appId: '1:123456789012:android:0000000000000000000000',
+    messagingSenderId: '123456789012',
+    projectId: 'pfa-debug-stub',
+    storageBucket: 'pfa-debug-stub.appspot.com',
   );
 }

@@ -6,6 +6,9 @@ this module never touches Plaid/Firebase — keeping cold starts cheap and tests
 
 from __future__ import annotations
 
+import os
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -25,7 +28,22 @@ from app.config import get_settings
 
 def create_app() -> FastAPI:
     settings = get_settings()
-    app = FastAPI(title="Personal Finance Assistant API", version="0.1.0")
+
+    @asynccontextmanager
+    async def lifespan(app: FastAPI):
+        # Local-only demo data. Skipped under pytest so the test suite stays deterministic.
+        if (
+            settings.app_env == "local"
+            and settings.seed_demo_data
+            and not os.getenv("PYTEST_CURRENT_TEST")
+        ):
+            from app.api.deps import get_repository
+            from app.seed import seed_demo_data
+
+            seed_demo_data(get_repository(settings), settings.dev_uid)
+        yield
+
+    app = FastAPI(title="Personal Finance Assistant API", version="0.1.0", lifespan=lifespan)
 
     app.add_middleware(
         CORSMiddleware,

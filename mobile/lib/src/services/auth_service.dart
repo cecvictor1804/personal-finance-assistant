@@ -11,10 +11,22 @@ class AuthService extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
+  /// DEV BYPASS: when true, the app treats the session as signed-in without Firebase.
+  /// Pairs with the backend running in AUTH_DISABLED=true mode (no ID token required;
+  /// requests run as DEV_UID, which defaults to 'dev-user').
+  bool _devBypass = false;
+  bool get isDevBypass => _devBypass;
+
+  /// Enters dev mode: no real auth and no ID token. Lets you explore the UI locally.
+  void continueAsDev() {
+    _devBypass = true;
+    notifyListeners();
+  }
+
   User? get user => _auth.currentUser;
-  bool get isSignedIn => _auth.currentUser != null;
-  String? get email => _auth.currentUser?.email;
-  String? get uid => _auth.currentUser?.uid;
+  bool get isSignedIn => _devBypass || _auth.currentUser != null;
+  String? get email => _devBypass ? 'dev@localhost' : _auth.currentUser?.email;
+  String? get uid => _devBypass ? 'dev-user' : _auth.currentUser?.uid;
 
   Future<void> signInWithGoogle() async {
     final googleUser = await _googleSignIn.signIn();
@@ -28,10 +40,15 @@ class AuthService extends ChangeNotifier {
   }
 
   Future<void> signOut() async {
+    _devBypass = false;
     await _googleSignIn.signOut();
     await _auth.signOut();
+    notifyListeners();
   }
 
-  /// A current Firebase ID token for the Authorization header (null if signed out).
-  Future<String?> idToken() => _auth.currentUser?.getIdToken() ?? Future<String?>.value(null);
+  /// A current Firebase ID token for the Authorization header (null if signed out or in dev mode).
+  Future<String?> idToken() {
+    if (_devBypass) return Future<String?>.value(null);
+    return _auth.currentUser?.getIdToken() ?? Future<String?>.value(null);
+  }
 }

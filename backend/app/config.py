@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     cors_origins: str = Field(default="http://localhost:5173")
     auth_disabled: bool = Field(default=False)
     dev_uid: str = Field(default="dev-user")
+    # When true (local only), seed the in-memory repo with demo data at startup. See app.seed.
+    seed_demo_data: bool = Field(default=False)
     # Shared secret guarding the internal sync endpoint hit by the webhook->Pub/Sub pipeline.
     # In production prefer OIDC service-account auth on the Pub/Sub push subscription.
     internal_secret: str = Field(default="")

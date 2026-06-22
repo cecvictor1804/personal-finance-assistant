@@ -11,8 +11,14 @@ import 'src/services/messaging_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+  // DEBUG STUB: tolerate Firebase init failing so a no-Firebase debug build still launches.
+  // Restore by running `flutterfire configure` (real google-services.json + options).
+  try {
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+  } catch (e) {
+    debugPrint('Firebase init skipped (debug stub, no real project): $e');
+  }
 
   final auth = AuthService();
   final api = Api(ApiClient(auth));

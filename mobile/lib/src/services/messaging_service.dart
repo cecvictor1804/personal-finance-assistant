@@ -14,14 +14,19 @@ class MessagingService {
   final Api _api;
 
   Future<void> init() async {
-    final fm = FirebaseMessaging.instance;
-    await fm.requestPermission();
+    try {
+      final fm = FirebaseMessaging.instance;
+      await fm.requestPermission();
 
-    final token = await fm.getToken();
-    if (token != null) {
-      await _safeRegister(token);
+      final token = await fm.getToken();
+      if (token != null) {
+        await _safeRegister(token);
+      }
+      fm.onTokenRefresh.listen(_safeRegister);
+    } catch (_) {
+      // Push is unavailable under stubbed Firebase / dev bypass — skip silently so the
+      // home screen still loads.
     }
-    fm.onTokenRefresh.listen(_safeRegister);
   }
 
   Future<void> _safeRegister(String token) async {

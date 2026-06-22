@@ -6,7 +6,9 @@ import 'package:local_auth/local_auth.dart';
 class AppLock extends ChangeNotifier {
   final LocalAuthentication _localAuth = LocalAuthentication();
 
-  bool enabled = true;
+  // Disabled by default in debug builds so the biometric lock never blocks local dev/testing
+  // (emulators rarely have an enrolled biometric or device credential). Release builds lock as usual.
+  bool enabled = !kDebugMode;
   bool locked = false;
 
   Future<bool> deviceSupported() async {
@@ -42,6 +44,12 @@ class AppLock extends ChangeNotifier {
   void setEnabled(bool value) {
     enabled = value;
     if (!value) locked = false;
+    notifyListeners();
+  }
+
+  /// DEV ESCAPE (debug only): unlock without biometrics when the device has none enrolled.
+  void devUnlock() {
+    locked = false;
     notifyListeners();
   }
 }
